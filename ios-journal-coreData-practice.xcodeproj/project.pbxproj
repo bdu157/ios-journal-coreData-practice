@@ -68,6 +68,16 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		0B7B3E4E23483BB700FD714A /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				0BE5AF3D2345A0E10089D635 /* EntriesTableViewController.swift */,
+				0BE5AF3F2345A1BB0089D635 /* EntryTableViewCell.swift */,
+				0BE5AF412345A2C20089D635 /* EntryDetailViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
 		0BE5AF1F23459EAD0089D635 = {
 			isa = PBXGroup;
 			children = (
@@ -88,12 +98,10 @@
 		0BE5AF2A23459EAD0089D635 /* ios-journal-coreData-practice */ = {
 			isa = PBXGroup;
 			children = (
-				0BE5AF2F23459EAD0089D635 /* Main.storyboard */,
-				0BE5AF3D2345A0E10089D635 /* EntriesTableViewController.swift */,
-				0BE5AF3F2345A1BB0089D635 /* EntryTableViewCell.swift */,
-				0BE5AF412345A2C20089D635 /* EntryDetailViewController.swift */,
 				0B7B3E46234824F100FD714A /* Models */,
+				0B7B3E4E23483BB700FD714A /* ViewControllers */,
 				0B7B3E4C2348287A00FD714A /* EntryController.swift */,
+				0BE5AF2F23459EAD0089D635 /* Main.storyboard */,
 			);
 			path = "ios-journal-coreData-practice";
 			sourceTree = "<group>";
