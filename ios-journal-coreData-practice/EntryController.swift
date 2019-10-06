@@ -41,17 +41,18 @@ class EntryController {
     
     
     //Create
-    func createEntry(title: String, bodyText: String){
-        let _ = Entry(title: title, bodyText: bodyText)
+    func createEntry(title: String, bodyText: String, mood: Mood){
+        let _ = Entry(title: title, bodyText: bodyText, mood: mood)
         
         self.saveToPersistentStore()
     }
     
     //Update
-    func updateEntry(for entry: Entry, title: String, bodyText: String, timestamp: Date) {
+    func updateEntry(for entry: Entry, title: String, bodyText: String, timestamp: Date, mood: String) {
         entry.title = title
         entry.bodyText = bodyText
         entry.timestamp = timestamp
+        entry.mood = mood
         
         self.saveToPersistentStore()
     }
