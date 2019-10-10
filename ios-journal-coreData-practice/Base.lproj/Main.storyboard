@@ -98,14 +98,22 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="BwT-Jl-ZKF">
+                                <rect key="frame" x="20" y="98" width="335" height="29"/>
+                                <segments>
+                                    <segment title="😟"/>
+                                    <segment title="🙂"/>
+                                    <segment title="😋"/>
+                                </segments>
+                            </segmentedControl>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter a title" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="o5b-ow-RL4">
-                                <rect key="frame" x="20" y="108" width="335" height="30"/>
+                                <rect key="frame" x="20" y="136" width="335" height="30"/>
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="egk-xU-aeL">
-                                <rect key="frame" x="20" y="158" width="335" height="261"/>
+                                <rect key="frame" x="20" y="176" width="335" height="261"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="261" id="EsT-lN-KEy"/>
@@ -116,11 +124,14 @@
                         </subviews>
                         <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="egk-xU-aeL" firstAttribute="top" secondItem="o5b-ow-RL4" secondAttribute="bottom" constant="20" id="1z9-Cq-7vL"/>
                             <constraint firstItem="o5b-ow-RL4" firstAttribute="leading" secondItem="BX7-Uc-H0e" secondAttribute="leading" constant="20" id="Cbx-YF-qR2"/>
+                            <constraint firstItem="BwT-Jl-ZKF" firstAttribute="top" secondItem="BX7-Uc-H0e" secondAttribute="top" constant="10" id="Jh8-i1-ezm"/>
                             <constraint firstItem="BX7-Uc-H0e" firstAttribute="trailing" secondItem="o5b-ow-RL4" secondAttribute="trailing" constant="20" id="OQY-V0-Ufi"/>
+                            <constraint firstItem="egk-xU-aeL" firstAttribute="top" secondItem="o5b-ow-RL4" secondAttribute="bottom" constant="10" id="QpO-14-ITA"/>
                             <constraint firstItem="egk-xU-aeL" firstAttribute="leading" secondItem="BX7-Uc-H0e" secondAttribute="leading" constant="20" id="VN0-3Y-w4f"/>
-                            <constraint firstItem="o5b-ow-RL4" firstAttribute="top" secondItem="BX7-Uc-H0e" secondAttribute="top" constant="20" id="doP-th-5mb"/>
+                            <constraint firstItem="BwT-Jl-ZKF" firstAttribute="leading" secondItem="BX7-Uc-H0e" secondAttribute="leading" constant="20" id="Vju-qi-1nH"/>
+                            <constraint firstItem="o5b-ow-RL4" firstAttribute="top" secondItem="BwT-Jl-ZKF" secondAttribute="bottom" constant="10" id="Xs4-Th-xZQ"/>
+                            <constraint firstItem="BX7-Uc-H0e" firstAttribute="trailing" secondItem="BwT-Jl-ZKF" secondAttribute="trailing" constant="20" id="o40-na-Moi"/>
                             <constraint firstItem="BX7-Uc-H0e" firstAttribute="trailing" secondItem="egk-xU-aeL" secondAttribute="trailing" constant="20" id="prM-HZ-gZr"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="BX7-Uc-H0e"/>
@@ -133,13 +144,14 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="moodSegmentedControl" destination="BwT-Jl-ZKF" id="d8K-1W-Y3p"/>
                         <outlet property="textView" destination="egk-xU-aeL" id="enK-dl-5ch"/>
                         <outlet property="titleTextField" destination="o5b-ow-RL4" id="CYU-Fd-cpB"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9kV-vf-kps" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1482.4000000000001" y="-41.379310344827587"/>
+            <point key="canvasLocation" x="1441" y="-44"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="OvY-sh-DAW">

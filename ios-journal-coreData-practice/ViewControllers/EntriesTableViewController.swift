@@ -7,10 +7,23 @@
 //
 
 import UIKit
+import CoreData
 
-class EntriesTableViewController: UITableViewController {
+class EntriesTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
     let entryController = EntryController()
+    
+    lazy var fetchedResultsController: NSFetchedResultsController<Entry> = {
+        let fetchRequest: NSFetchRequest<Entry> = Entry.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "mood", ascending: true), NSSortDescriptor(key: "timestamp", ascending: true)] //giving first NSSortDescriptor mood is the key to make section srot correctly
+        let moc = CoreDataStack.shared.mainContext
+        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: moc, sectionNameKeyPath: "mood", cacheName: nil)
+        frc.delegate = self
+        try! frc.performFetch()
+        return frc
+        
+        // add NSFetchResulsControllerDelegate
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,18 +39,24 @@ class EntriesTableViewController: UITableViewController {
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
-        return 1
+        return self.fetchedResultsController.sections?.count ?? 1
+    }
+    
+    //sectionTitle
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let section = self.fetchedResultsController.sections?[section] else {return nil}
+        return section.name
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return self.entryController.entries.count
+        return self.fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "EntryCell", for: indexPath)
 
-        let entry = self.entryController.entries[indexPath.row]
+        let entry = self.fetchedResultsController.object(at: indexPath)
         guard let customCell = cell as? EntryTableViewCell else {return UITableViewCell()}
         customCell.entry = entry
         return cell
@@ -46,15 +65,11 @@ class EntriesTableViewController: UITableViewController {
 
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let entry = self.entryController.entries[indexPath.row]
-            self.entryController.deleteEntry(for: entry)
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
+        if editingStyle == .delete { //there is no delete in the delegate below
+            let entry = self.fetchedResultsController.object(at: indexPath)
+            self.entryController.deleteEntry(for: entry)  //this has save in EntryController
+        }
     }
-
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -66,9 +81,58 @@ class EntriesTableViewController: UITableViewController {
             guard let destVC = segue.destination as? EntryDetailViewController,
                 let selectedRow = tableView.indexPathForSelectedRow else {return}
                 destVC.entryConteroller = self.entryController
-                destVC.entry = self.entryController.entries[selectedRow.row]
+                destVC.entry = self.fetchedResultsController.object(at: selectedRow)
         }
     }
 
+    //MARK: - NSfetchresultcontrollerDelegate
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.beginUpdates()
+    }
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        self.tableView.endUpdates()
+    }
+    
+    
+    //Sections
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange sectionInfo: NSFetchedResultsSectionInfo,
+                    atSectionIndex sectionIndex: Int,
+                    for type: NSFetchedResultsChangeType) {
+        switch type {
+        case .insert:
+            tableView.insertSections(IndexSet(integer: sectionIndex), with: .automatic)
+        case .delete:
+            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .automatic)
+        default:
+            break
+        }
+    }
+    
+    //Rows
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>,
+                    didChange anObject: Any,
+                    at indexPath: IndexPath?,
+                    for type: NSFetchedResultsChangeType,
+                    newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            guard let newIndexPath = newIndexPath else {return}
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
+        case .update:
+            guard let indexPath = indexPath else {return}
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        case .move:
+            guard let oldIndexPath = indexPath,
+                let newIndexPath = newIndexPath else {return}
+            tableView.deleteRows(at: [oldIndexPath], with: .automatic)
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
+        case .delete:
+            guard let indexPath = indexPath else {return}
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        default:
+            break
+        }
+    }
 
 }
