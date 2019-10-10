@@ -37,7 +37,7 @@ class EntryController {
         }
     }
     */
-    //SaveToCoreDataStore
+    //MARK: SaveToCoreDataStore - maincontext
     func saveToPersistentStore() {
         do {
             let moc = CoreDataStack.shared.mainContext
@@ -46,6 +46,20 @@ class EntryController {
             NSLog("Error saving managed object context:\(error)")
         }
     }
+    
+    //MARK: SaveToCoreDataStore - backgroundContext
+    func saveToPersistentStoreBackgroundContext(bgcontext: NSManagedObjectContext = CoreDataStack.shared.mainContext) throws {
+        var error: Error?
+        bgcontext.performAndWait {
+            do {
+                try bgcontext.save()
+            } catch let saveError {
+                error = saveError
+            }
+        }
+        if let error = error {throw error}
+    }
+    
     
     //MARK: -------------------------Networking------------------------------//
     
@@ -65,8 +79,7 @@ class EntryController {
             
             representation.identifier = uuidString
             entry.identifier = uuidString
-            self.saveToPersistentStore()
-            
+            self.saveToPersistentStore()  //leave this as it is since this is being saved into maincontext anyways
             request.httpBody = try JSONEncoder().encode(representation)
         } catch {
             NSLog("Error encoding entry \(entry):\(error)")
@@ -174,7 +187,6 @@ class EntryController {
         fetchRequest.predicate = NSPredicate(format: "identifier IN %@", identifierToFetch)  //bring datas from persistentStore only if they have same identifiers from datas from the server (firebase)
         
         let context = CoreDataStack.shared.mainContext
-        
         do {
             let existingEntries = try context.fetch(fetchRequest)  //datas from persistentStore
             
