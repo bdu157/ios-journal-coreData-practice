@@ -37,7 +37,7 @@ class EntryController {
         }
     }
     */
-    //SaveToCoreDataStore
+    //MARK: SaveToCoreDataStore - maincontext
     func saveToPersistentStore() {
         do {
             let moc = CoreDataStack.shared.mainContext
@@ -46,6 +46,20 @@ class EntryController {
             NSLog("Error saving managed object context:\(error)")
         }
     }
+    
+    //MARK: SaveToCoreDataStore - backgroundContext
+    func saveToPersistentStoreBackgroundContext(bgcontext: NSManagedObjectContext = CoreDataStack.shared.mainContext) throws {
+        var error: Error?
+        bgcontext.performAndWait {
+            do {
+                try bgcontext.save()
+            } catch let saveError {
+                error = saveError
+            }
+        }
+        if let error = error {throw error}
+    }
+    
     
     //MARK: -------------------------Networking------------------------------//
     
@@ -65,8 +79,7 @@ class EntryController {
             
             representation.identifier = uuidString
             entry.identifier = uuidString
-            self.saveToPersistentStore()
-            
+            self.saveToPersistentStore()  //leave this as it is since this is being saved into maincontext anyways
             request.httpBody = try JSONEncoder().encode(representation)
         } catch {
             NSLog("Error encoding entry \(entry):\(error)")
@@ -144,7 +157,7 @@ class EntryController {
         
         self.put(entry: entry)
         
-        self.saveToPersistentStore()
+        self.saveToPersistentStore() //leave this as it is since this is being saved into maincontext anyways
     }
     
     //Update -------------------------------------------------------------------------- updating core data and firebase
@@ -156,7 +169,7 @@ class EntryController {
         
         self.put(entry: entry)
         
-        self.saveToPersistentStore()
+        self.saveToPersistentStore() //leave this as it is since this is being saved into maincontext anyways
     }
     
     
@@ -173,27 +186,34 @@ class EntryController {
         let fetchRequest: NSFetchRequest<Entry> = Entry.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "identifier IN %@", identifierToFetch)  //bring datas from persistentStore only if they have same identifiers from datas from the server (firebase)
         
-        let context = CoreDataStack.shared.mainContext
-        
-        do {
-            let existingEntries = try context.fetch(fetchRequest)  //datas from persistentStore
-            
-            for entry in existingEntries {
-                guard let id = entry.identifier,
-                    let representation = representationByID[id] else {continue}
-                self.update(entry: entry, with: representation)  //update each object comparing representation (fetchedDatafromServer) and entry (datas in persistentStore)
-                entryToCreate.removeValue(forKey: id) //remove the dictionary that i created above to use comparison in represenations and persistentstore data
+        //let context = CoreDataStack.shared.mainContext
+        let bgcontext = CoreDataStack.shared.container.newBackgroundContext()
+
+        bgcontext.perform {
+            do {
+                let existingEntries = try bgcontext.fetch(fetchRequest)  //datas from persistentStore
+                
+                for entry in existingEntries {
+                    guard let id = entry.identifier,
+                        let representation = representationByID[id] else {continue}
+                    self.update(entry: entry, with: representation)  //update each object comparing representation (fetchedDatafromServer) and entry (datas in persistentStore)
+                    entryToCreate.removeValue(forKey: id) //remove the dictionary that i created above to use comparison in represenations and persistentstore data
+                }
+                
+                //creatingEntries - entryToCreate(representationByID) was removed based on id (entry.identifier - persistentStore) so what this below does create new entries because they do not exsit in persistentStore after comparison between coreData (entry) and fetchedData (represenation)
+                for representation in entryToCreate.values {
+                    Entry(entryRepresentation: representation, context: bgcontext) //this is creating based on representation (datas from the server but does not exist in coreData)
+                }
+            } catch {
+                NSLog("Error fetching entries for UUID.uuidString: \(error)")
             }
-            
-            //creatingEntries - entryToCreate(representationByID) was removed based on id (entry.identifier - persistentStore) so what this below does create new entries because they do not exsit in persistentStore after comparison between coreData (entry) and fetchedData (represenation)
-            for representation in entryToCreate.values {
-                Entry(entryRepresentation: representation, context: context) //this is creating based on representation (datas from the server but does not exist in coreData)
+            //self.saveToPersistentStore()
+            do {
+                try self.saveToPersistentStoreBackgroundContext(bgcontext: bgcontext)
+            } catch {
+                NSLog("there is an error in saving updates: \(error)")
             }
-        } catch {
-            NSLog("Error fetching entries for UUID.uuidString: \(error)")
         }
-        
-        self.saveToPersistentStore()
     }
     
     //update datas from the server (firebase) and datas from persistentStore (coreData)
